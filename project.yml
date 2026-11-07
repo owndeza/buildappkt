@@ -25,6 +25,13 @@ targets:
         CFBundleDisplayName: PersistentIsland
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleURLTypes:
+          - CFBundleURLName: com.owndeza.persistentisland
+            CFBundleURLSchemes:
+              - persistentisland
+        NSSupportsLiveActivities: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
         UILaunchScreen: {}
     settings:
       base:
@@ -47,6 +54,8 @@ targets:
         CFBundleDisplayName: PersistentIsland
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.owndeza.persistentisland.widget
