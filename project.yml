@@ -1,0 +1,79 @@
+name: PersistentIsland
+options:
+  minimumXcodeGenVersion: 2.41.0
+  deploymentTarget:
+    iOS: "16.2"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.0.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  PersistentIsland:
+    type: application
+    platform: iOS
+    sources:
+      - path: PersistentIsland
+      - path: Shared
+    info:
+      path: PersistentIsland/Info.plist
+      properties:
+        CFBundleDisplayName: PersistentIsland
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.owndeza.persistentisland
+        PRODUCT_NAME: PersistentIsland
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+    dependencies:
+      - target: PersistentIslandWidget
+        embed: true
+  PersistentIslandWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PersistentIslandWidget
+      - path: Shared
+    info:
+      path: PersistentIslandWidget/Info.plist
+      properties:
+        CFBundleDisplayName: PersistentIsland
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.owndeza.persistentisland.widget
+        PRODUCT_NAME: PersistentIslandWidget
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        APPLICATION_EXTENSION_API_ONLY: YES
+  PersistentIslandTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: PersistentIsland
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.owndeza.persistentisland.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  PersistentIsland:
+    build:
+      targets:
+        PersistentIsland: all
+        PersistentIslandWidget: all
+        PersistentIslandTests: [test]
+    test:
+      targets:
+        - PersistentIslandTests
+      gatherCoverageData: true
+

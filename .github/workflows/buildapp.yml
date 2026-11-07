@@ -1,0 +1,104 @@
+name: Build PersistentIsland
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: persistent-island-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DERIVED_DATA: ${{ github.workspace }}/build/DerivedData
+      OUTPUT_DIR: ${{ github.workspace }}/artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inspect installed Apple toolchain
+        run: |
+          set -o pipefail
+          xcode-select -p
+          xcodebuild -version
+          xcodebuild -showsdks
+          swift --version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: |
+          xcodegen version
+          xcodegen generate
+          xcodebuild -list -project PersistentIsland.xcodeproj
+
+      - name: Validate project settings
+        run: |
+          xcodebuild \
+            -project PersistentIsland.xcodeproj \
+            -scheme PersistentIsland \
+            -sdk iphoneos \
+            -showBuildSettings > build-settings.txt
+          grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com.owndeza.persistentisland' build-settings.txt
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          SIMULATOR_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(d["udid"] for runtime in data["devices"].values() for d in runtime if d["name"].startswith("iPhone")))')
+          xcodebuild \
+            -project PersistentIsland.xcodeproj \
+            -scheme PersistentIsland \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -derivedDataPath "$DERIVED_DATA-tests" \
+            CODE_SIGNING_ALLOWED=NO \
+            test 2>&1 | tee test.log
+
+      - name: Build unsigned device app
+        run: bash Scripts/build.sh 2>&1 | tee build.log
+
+      - name: Validate app and extension
+        run: |
+          APP="$DERIVED_DATA/Build/Products/Release-iphoneos/PersistentIsland.app"
+          EXT="$APP/PlugIns/PersistentIslandWidget.appex"
+          test -d "$APP"
+          test -d "$EXT"
+          /usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP/Info.plist" | grep -q true
+          /usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionPointIdentifier' "$EXT/Info.plist" | grep -q com.apple.widgetkit-extension
+          file "$APP/PersistentIsland" | grep -q arm64
+          file "$EXT/PersistentIslandWidget" | grep -q arm64
+
+      - name: Package and inspect IPA
+        run: |
+          bash Scripts/package-ipa.sh
+          unzip -t "$OUTPUT_DIR/PersistentIsland-unsigned.ipa"
+          unzip -l "$OUTPUT_DIR/PersistentIsland-unsigned.ipa" | grep -q 'Payload/PersistentIsland.app/PlugIns/PersistentIslandWidget.appex/'
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PersistentIsland-unsigned
+          path: artifacts/PersistentIsland-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PersistentIsland-build-logs
+          path: |
+            build.log
+            test.log
+            build-settings.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
