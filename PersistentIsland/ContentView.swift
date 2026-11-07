@@ -149,7 +149,3 @@ private struct ActivityPreview: View {
     }
 }
 
-#Preview {
-    ContentView().environmentObject(ActivityManager())
-}
-

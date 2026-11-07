@@ -73,9 +73,3 @@ struct PersistentIslandLiveActivity: Widget {
     }
 }
 
-#Preview("Dynamic Island", as: .dynamicIsland(.compact), using: IslandAttributes(startedAt: .now)) {
-    PersistentIslandLiveActivity()
-} contentStates: {
-    IslandAttributes.ContentState(isRunning: true, indicatorStyle: .dot)
-}
-
