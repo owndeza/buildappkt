@@ -63,13 +63,12 @@ targets:
         SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "1"
         APPLICATION_EXTENSION_API_ONLY: YES
-  PersistentIslandTests:
+  PersistentIslandLogicTests:
     type: bundle.unit-test
-    platform: iOS
+    platform: macOS
     sources:
       - path: Tests
-    dependencies:
-      - target: PersistentIsland
+      - path: PersistentIsland/ActivityLifecycleState.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.owndeza.persistentisland.tests
@@ -80,9 +79,12 @@ schemes:
       targets:
         PersistentIsland: all
         PersistentIslandWidget: all
-        PersistentIslandTests: [test]
+  PersistentIslandLogicTests:
+    build:
+      targets:
+        PersistentIslandLogicTests: [test]
     test:
       targets:
-        - PersistentIslandTests
+        - PersistentIslandLogicTests
       gatherCoverageData: true
 

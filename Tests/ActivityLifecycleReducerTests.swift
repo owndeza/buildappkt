@@ -1,5 +1,4 @@
 import XCTest
-@testable import PersistentIsland
 
 final class ActivityLifecycleReducerTests: XCTestCase {
     func testRestoreFindsExistingActivity() {
