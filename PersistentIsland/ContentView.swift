@@ -3,12 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var manager: ActivityManager
     @AppStorage("appearance") private var appearance = "system"
-    @AppStorage("indicatorStyle") private var indicatorStyleRaw = IndicatorStyle.dot.rawValue
     @State private var showingSettings = false
-
-    private var indicatorStyle: IndicatorStyle {
-        IndicatorStyle(rawValue: indicatorStyleRaw) ?? .dot
-    }
 
     var body: some View {
         NavigationStack {
@@ -17,7 +12,7 @@ struct ContentView: View {
                     header
                     StatusCard()
                     controls
-                    ActivityPreview(indicatorStyle: indicatorStyle)
+                    ActivityPreview()
                     limitation
                 }
                 .padding()
@@ -53,7 +48,7 @@ struct ContentView: View {
     private var controls: some View {
         VStack(spacing: 12) {
             Button {
-                Task { await manager.start(indicatorStyle: indicatorStyle) }
+                Task { await manager.start() }
             } label: {
                 Label("Start Island", systemImage: "play.fill")
                     .frame(maxWidth: .infinity)
@@ -71,7 +66,7 @@ struct ContentView: View {
                 Spacer()
 
                 Button("Restart Island") {
-                    Task { await manager.restart(indicatorStyle: indicatorStyle) }
+                    Task { await manager.restart() }
                 }
                 .disabled(manager.lifecycle != .active)
             }
@@ -102,11 +97,6 @@ private struct StatusCard: View {
                     .foregroundStyle(manager.lifecycle == .active ? .green : .secondary)
             }
             LabeledContent("ActivityKit", value: manager.activitiesEnabled ? "Доступен" : "Недоступен")
-            if let startedAt = manager.startedAt {
-                LabeledContent("Длительность") {
-                    Text(startedAt, style: .timer).monospacedDigit()
-                }
-            }
             if let error = manager.lastError {
                 Text(error).font(.footnote).foregroundStyle(.red)
             }
@@ -117,8 +107,6 @@ private struct StatusCard: View {
 }
 
 private struct ActivityPreview: View {
-    let indicatorStyle: IndicatorStyle
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Предпросмотр").font(.headline)
@@ -140,10 +128,6 @@ private struct ActivityPreview: View {
             Capsule()
                 .fill(.black)
                 .frame(width: width, height: width > 100 ? 52 : 32)
-                .overlay {
-                    Image(systemName: indicatorStyle.symbolName)
-                        .font(.system(size: 8)).foregroundStyle(.mint)
-                }
             Text(title).font(.caption2).foregroundStyle(.secondary)
         }
     }

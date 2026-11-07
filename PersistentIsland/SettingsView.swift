@@ -6,7 +6,6 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var manager: ActivityManager
     @AppStorage("appearance") private var appearance = "system"
-    @AppStorage("indicatorStyle") private var indicatorStyleRaw = IndicatorStyle.dot.rawValue
     @State private var copied = false
 
     var body: some View {
@@ -18,13 +17,6 @@ struct SettingsView: View {
                         Text("Светлая").tag("light")
                         Text("Тёмная").tag("dark")
                     }
-                    Picker("Минимальный индикатор", selection: $indicatorStyleRaw) {
-                        ForEach(IndicatorStyle.allCases) { style in
-                            Label(style.title, systemImage: style.symbolName).tag(style.rawValue)
-                        }
-                    }
-                    Text("Для применения нового индикатора перезапустите активность.")
-                        .font(.caption).foregroundStyle(.secondary)
                 }
 
                 Section("Диагностика") {

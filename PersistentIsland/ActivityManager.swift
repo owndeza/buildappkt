@@ -42,7 +42,7 @@ final class ActivityManager: ObservableObject {
         lifecycle = map(activity.activityState)
     }
 
-    func start(indicatorStyle: IndicatorStyle) async {
+    func start() async {
         await refresh()
         guard activitiesEnabled else {
             setError("Live Activities отключены в настройках iOS или недоступны на этом устройстве.", state: .unsupported)
@@ -54,7 +54,7 @@ final class ActivityManager: ObservableObject {
         lastError = nil
         let startDate = Date()
         let attributes = IslandAttributes(startedAt: startDate)
-        let state = IslandAttributes.ContentState(isRunning: true, indicatorStyle: indicatorStyle)
+        let state = IslandAttributes.ContentState(isRunning: true)
 
         do {
             let activity = try Activity.request(
@@ -82,7 +82,7 @@ final class ActivityManager: ObservableObject {
 
         lifecycle = .ending
         lastError = nil
-        let finalState = IslandAttributes.ContentState(isRunning: false, indicatorStyle: .dot)
+        let finalState = IslandAttributes.ContentState(isRunning: false)
         for activity in activities {
             await activity.end(
                 ActivityContent(state: finalState, staleDate: nil),
@@ -95,9 +95,9 @@ final class ActivityManager: ObservableObject {
         activeCount = 0
     }
 
-    func restart(indicatorStyle: IndicatorStyle) async {
+    func restart() async {
         await stop()
-        await start(indicatorStyle: indicatorStyle)
+        await start()
     }
 
     private func observeAuthorizationChanges() async {
